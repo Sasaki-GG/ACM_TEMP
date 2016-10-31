@@ -1,0 +1,57 @@
+#include<iostream>
+#include<string.h>
+#include<cstdio>
+using namespace std;
+int s[10005],t[1000005],k,l,m,i,j,pp;
+int nextt[10005];
+int main()
+{
+	scanf("%d",&k);
+	for( pp=0;pp<k;pp++)
+	{
+		scanf("%d%d",&m,&l);
+/*		if(m<l)				
+		{
+			printf("-1\n");
+			continue;
+		}
+*/		memset(s,0,sizeof(s));
+		memset(t,0,sizeof(t));
+		for( i=0;i<m;i++)
+			scanf("%d",&t[i]);
+		for( i=0;i<l;i++)
+			scanf("%d",&s[i]);	
+		nextt[0]=-1;
+		j=-1,i=0;
+		nextt[0] = -1;
+		while(i <l)
+		{
+          if(j == -1 || s[i] == s[j])
+         {
+                  i++;
+                  j++;
+                  nextt[i] = j;
+         }
+         else
+            j = nextt[j];
+		}
+		i=0,j=0;
+		while(i<m&&j<l)
+		{
+			if(t[i]==s[j]||j==-1)
+			{
+				i++;
+				j++;
+			}
+			else
+			{
+				j=nextt[j];
+			}
+		}
+		if(j>=l)
+			printf("%d\n",i+1-l);
+		else if(i+j>m)
+			printf("-1\n");		
+	}
+	return 0;
+}

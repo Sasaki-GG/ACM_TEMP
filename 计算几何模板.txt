@@ -1,0 +1,112 @@
+#include <iostream>
+#include <cstdio>
+#include <vector>
+#include <cmath>
+#include <algorithm>
+#define MAX 111116
+#define eps 1e-7
+using namespace std;
+int sgn(const double &x){ return x < -eps? -1 : (x > eps);}
+inline double sqr(const double &x){ return x * x;}
+inline int gcd(int a, int b){ return !b? a: gcd(b, a % b);}
+struct Point
+{
+    double x, y;
+    Point(){}
+    Point(const double &x, const double &y):x(x), y(y){}
+    Point operator -(const Point &a)const{ return Point(x - a.x, y - a.y); }
+    Point operator +(const Point &a)const{ return Point(x + a.x, y + a.y); }
+    Point operator * (const double &a)const{ return Point(x * a, y * a); }
+    Point operator / (const double &a)const{ return Point(x / a, y / a); }
+    friend double det(const Point &a, const Point &b){ return a.x * b.y - a.y * b.x;}
+    friend double dot(const Point &a, const Point &b){ return a.x * b.x + a.y * b.y;}
+    friend double dist(const Point &a, const Point &b){ return sqrt(sqr(a.x - b.x) + sqr(a.y - b.y));}
+    void in(){ scanf("%lf %lf", &x, &y); }
+    void out(){ printf("%.2f %.2f\n", x, y); }
+};
+struct Line
+{
+    Point s, t;
+    Line() {}
+    Line(const Point &s, const Point &t):s(s), t(t) {}
+    void in() { s.in(),t.in(); }
+    double pointDistLine(const Point &p)
+    {
+        if(sgn(dot(t - s, p - s)) < 0)return dist(p, s);
+        if(sgn(dot( s - t, p - t)) < 0)return dist(p, t);
+        return fabs(det(t - s, p - s)) / dist(s, t);
+    }
+    bool pointOnLine(const Point &p)
+    {
+        return sgn(det(t - s, p - s)) == 0 && sgn(dot(s - p, t - p)) <= 0;
+    }
+};
+struct Poly //多边形类
+{
+    vector<Point>a;
+    void in(const int &r)
+    {
+        a.resize(r);
+        for(int i = 0; i < r; i++) a[i].in();
+    }
+
+    //计算多边形的周长
+    double perimeter()
+    {
+        double sum=0;
+        int n=a.size();
+        for(int i=0;i<n;i++) sum+=dist(a[i],a[(i+1)%n]);
+        return sum;
+    }
+
+    //计算多边形的面积
+    double getDArea()
+    {
+        int n = a.size();
+        double ans = 0;
+        for(int i = 0; i < n; i++) ans += det(a[i], a[(i + 1)%n]);
+        return ans / 2;
+    }
+
+    //计算多边形的重心坐标
+    Point getMassCenter()
+    {
+        Point center(0, 0);
+        if(sgn(getDArea())==0) return center; //面积为0情况，当然这题说了面积不可能为0可不写
+        int n = a.size();
+        for(int i = 0; i < n; i++)
+            center =center + (a[i] + a[(i + 1) % n]) * det(a[i], a[(i + 1) % n]);
+        return center / getDArea() / 6;
+    }
+
+    //计算点t是否在多边形内,返回0指在外，1指在内，2指在边界上
+    int pointOnline(Point t)
+    {
+        int num=0,i,d1,d2,k,n=a.size();
+        for(i=0;i<n;i++)
+        {
+            Line line=Line(a[i],a[(i+1)%n]);
+            if(line.pointOnLine(t)) return 2;
+            k=sgn(det(a[(i+1)%n]-a[i],t-a[i]));
+            d1=sgn(a[i].y-t.y);
+            d2=sgn(a[(i+1)%n].y-t.y);
+            if(k>0&&d1<=0&&d2>0) num++;
+            if(k<0&&d2<=0&&d1>0) num--;
+        }
+        return num!=0;
+    }
+}poly;
+
+int main()
+{
+    int T;
+    cin>>T;
+    while(T--)
+    {
+        int n;
+        cin>>n;
+        poly.in(n);
+        poly.getMassCenter().out();
+    }
+    return 0;
+}

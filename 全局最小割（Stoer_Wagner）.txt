@@ -1,0 +1,59 @@
+#include<iostream>
+#define min(a,b) ((a)<(b)?(a):(b))
+using namespace std;
+const int MAX = 505;
+const int INF = 1<<30;
+ 
+int map[MAX][MAX];
+int v[MAX], dis[MAX];
+bool vis[MAX];
+ 
+int Stoer_Wagner(int n){
+    int i, j, res = INF;
+    for(i = 0; i < n; i ++)
+        v[i] = i;
+    while(n > 1){
+        int k = 1, pre = 0;
+        for(i = 1; i < n; i ++){
+            dis[v[i]] = map[v[0]][v[i]];
+            if(dis[v[i]] > dis[v[k]])
+                k = i;
+        }
+        memset(vis, 0, sizeof(vis));
+        vis[v[0]] = true;
+        for(i = 1; i < n; i ++){
+            if(i == n-1){
+                res = min(res, dis[v[k]]);
+                for(j = 0; j < n; j ++){
+                    map[v[pre]][v[j]] += map[v[j]][v[k]];
+                    map[v[j]][v[pre]] += map[v[j]][v[k]];
+                }
+                v[k] = v[-- n];
+            }
+            vis[v[k]] = true;
+            pre = k;
+            k = -1;
+            for(j = 1; j < n; j ++)
+                if(!vis[v[j]]){
+                    dis[v[j]] += map[v[pre]][v[j]];
+                    if(k == -1 || dis[v[k]] < dis[v[j]])
+                        k = j;
+                }
+        }
+    }
+    return res;
+}
+ 
+int main(){
+    int n, m, u, v, w;
+    while(scanf("%d%d", &n, &m) != EOF){
+        memset(map, 0, sizeof(map));
+        while(m --){
+            scanf("%d%d%d", &u, &v, &w);
+            map[u][v] += w;
+            map[v][u] += w;
+        }
+        printf("%d\n", Stoer_Wagner(n));
+    }
+    return 0;
+}

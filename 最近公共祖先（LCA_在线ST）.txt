@@ -1,0 +1,114 @@
+#include <iostream>
+#include <cstdio>
+#include <algorithm>
+#include <math.h>
+#include <string.h>
+#define LL long long
+using namespace std;
+const int M = 1000000007;
+const int N = 80005;
+int n,m,a,b,c;
+struct  ls
+{
+    int nx,u,v,w;
+}s[N];
+int head[N],first[N],ver[N],R[N];
+int dis[N],st[N][20],vis[N],pos=0,tot=0;
+int min(int a,int b)
+{
+    return a<b?a:b;
+}
+void add(int x,int y,int c)
+{
+    s[pos].u=x;
+    s[pos].v=y;
+    s[pos].w=c;
+    s[pos].nx=head[x];
+    head[x]=pos++;
+}
+void DFS(int x,int deep)
+{
+    vis[x]=1;
+    first[x]=tot;
+    ver[tot]=x;
+    R[tot]=deep;
+    tot++;
+    for (int i=head[x];i!=-1;i=s[i].nx)
+    {
+        int e=s[i].v;
+        if (vis[e]==0)
+        {
+            dis[e]=dis[x]+s[i].w;
+            DFS(e,deep+1);
+            ver[tot]=x;
+            R[tot]=deep;
+            tot++;
+        }
+    }
+}
+void gest(int n)
+{
+    for (int j=0;(1<<j)<=n;j++)
+        for (int i=1;i+(1<<j)-1<=n;i++)
+        {
+            if (j==0)
+                st[i][j]=i;
+            else
+            {
+                int a=st[i][j-1];
+                int b=st[i+(1<<(j-1))][j-1];
+                st[i][j]=R[a]<R[b]?a:b;
+            }
+        }
+}
+int query(int l,int r)
+{
+    int k=0;
+    while ((1<<(k+1))<=r-l+1)
+        k++;
+    int a=st[l][k];
+    int b=st[r-(1<<k)][k];
+    return R[a]<R[b]?a:b;
+}
+int LCA(int a,int b)
+{
+    a=first[a];
+    b=first[b];
+    if (a>b)
+        swap(a,b);
+    int v=query(a,b);
+    return ver[v];
+}
+void ini()
+{
+    pos=0;
+    tot=0;
+    memset(vis,0,sizeof(vis));
+    memset(head,-1,sizeof(head));
+    memset(st,0,sizeof(st));
+}
+int main()
+{
+    int T;
+    scanf("%d",&T);
+    while (T--)
+    {
+        scanf("%d%d",&n,&m);
+        ini();
+        for (int i=0;i<n-1;i++)
+        {
+            scanf("%d%d%d",&a,&b,&c);
+            add(a,b,c);
+            add(b,a,c);
+        }
+        DFS(1,1);
+        gest(2*n-1);
+        for (int i=0;i<m;i++)
+        {
+            scanf("%d%d",&a,&b);
+            int temp=LCA(a,b);
+            printf("%d\n",dis[a]+dis[b]-2*dis[temp]);
+        }
+    }
+    return 0;
+}

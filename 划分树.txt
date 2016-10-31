@@ -1,0 +1,100 @@
+#include <iostream>
+#include <stdio.h>
+#include <cstring>
+#include <algorithm>
+using namespace std;
+//14256K 1813MS
+//»®·ÖÊ÷
+const int maxnum=100001;
+struct tree
+{
+    int array[maxnum];
+    int sum[maxnum];
+}tree[20];
+int sorted[maxnum];
+
+void build_tree(int cur,int l,int r)
+{
+    if(l==r)
+        return ;
+    int i;
+    int m=(l+r)>>1;
+    int lsame=m-l+1;//?
+    for(i=l;i<=r;i++)
+        if(tree[cur].array[i]<sorted[m])
+            lsame--;
+
+    int lnum=l,rnum=m+1;
+    for(i=l;i<=r;i++)
+    {
+        if(i==l)
+            tree[cur].sum[i]=0;
+        else
+            tree[cur].sum[i]=tree[cur].sum[i-1];
+        if(tree[cur].array[i]<sorted[m])
+        {
+            tree[cur].sum[i]++;
+            tree[cur+1].array[lnum++]=tree[cur].array[i];
+        }
+        else if(tree[cur].array[i]>sorted[m])
+            tree[cur+1].array[rnum++]=tree[cur].array[i];
+        else
+        {
+            if(lsame>0)
+            {
+                lsame--;
+                tree[cur].sum[i]++; //?
+                tree[cur+1].array[lnum++]=tree[cur].array[i];
+            }
+            else
+                tree[cur+1].array[rnum++]=tree[cur].array[i];
+        }
+    }
+    build_tree(cur+1,l,m);
+    build_tree(cur+1,m+1,r);
+}
+
+int find(int cur,int st,int ed,int l,int r,int k)
+{
+    if(l==r)
+        return tree[cur].array[l];
+    int lnum,rnum;
+    int m=(st+ed)>>1;
+    if(l-1<st)
+        lnum=0;
+    else
+        lnum=tree[cur].sum[l-1];
+    rnum=tree[cur].sum[r];
+    if(rnum-lnum>=k)
+        return find(cur+1,st,m,st+lnum,st+rnum-1,k);
+    else
+        return find(cur+1,m+1,ed,m+1+l-st-lnum,m+1+r-st-rnum,k-(rnum-lnum));
+}
+
+int main()
+{
+    int n,m,i;
+    scanf("%d%d",&n,&m);
+    for(i=1;i<=n;i++)
+    {
+        scanf("%d",&tree[0].array[i]);
+        sorted[i]=tree[0].array[i];
+    }
+    sort(sorted+1,sorted+1+n);
+    build_tree(0,1,n);
+
+    int p,r,k;
+    while(m--)
+    {
+        scanf("%d%d%d",&p,&r,&k);
+        printf("%d\n",find(0,1,n,p,r,k));
+    }
+    return 0;
+}
+
+/*
+7 2
+1 5 2 6 3 7 4
+1 5 3
+2 7 1
+*/

@@ -1,0 +1,154 @@
+#include <map>
+#include <set>
+#include <stack>
+#include <queue>
+#include <cmath>
+#include <string>
+#include <vector>
+#include <cstdio>
+#include <cctype>
+#include <cstring>
+#include <sstream>
+#include <cstdlib>
+#include <iostream>
+#include <algorithm>
+#pragma comment(linker,"/STACK:102400000,102400000")
+
+using namespace std;
+#define   MAX           200005
+#define   MAXN          1000005
+#define   maxnode       205
+#define   sigma_size    26
+#define   lson          l,m,rt<<1
+#define   rson          m+1,r,rt<<1|1
+#define   lrt           rt<<1
+#define   rrt           rt<<1|1
+#define   middle        int m=(r+l)>>1
+#define   LL            long long
+#define   ull           unsigned long long
+#define   mem(x,v)      memset(x,v,sizeof(x))
+#define   lowbit(x)     (x&-x)
+#define   pii           pair<int,int>
+#define   bits(a)       __builtin_popcount(a)
+#define   mk            make_pair
+#define   limit         10000
+
+//const int    prime = 999983;
+const int    INF   = 0x3f3f3f3f;
+const LL     INFF  = 0x3f3f;
+const double pi    = acos(-1.0);
+const double inf   = 1e18;
+const double eps   = 1e-4;
+const LL    mod    = 1e9+7;
+const ull    mx    = 133333331;
+
+/*****************************************************/
+inline void RI(int &x) {
+      char c;
+      while((c=getchar())<'0' || c>'9');
+      x=c-'0';
+      while((c=getchar())>='0' && c<='9') x=(x<<3)+(x<<1)+c-'0';
+ }
+/*****************************************************/
+
+struct Matrix{
+    int n;
+    LL maze[maxnode][maxnode];
+
+    void init(int n)
+    {
+        this->n = n;
+        mem(maze,0);
+    }
+    Matrix operator * (Matrix &rhs)
+    {
+        Matrix m;
+        m.init(n);
+        for(int i=0;i<n;i++)
+            for(int j=0;j<n;j++)
+                for(int k=0;k<n;k++)
+                    m.maze[i][j] = (m.maze[i][j] + maze[i][k] * rhs.maze[k][j])%mod;
+        return m;
+    }
+};
+int k;
+LL qpow(Matrix a,int n)
+{
+    Matrix ans;
+    ans.init(a.n);
+    for(int i=0;i<ans.n;i++)
+        ans.maze[i][i] = 1;
+    while(n)
+    {
+        if(n&1) ans = ans * a;
+        a = a*a;
+        n >>= 1;
+    }
+/*
+    for (int i=0;i<ans.n;i++)
+    {
+        for (int j=0;j<ans.n;j++)
+            printf("%d ",ans.maze[i][j]);
+        printf("\n");
+    }
+*/
+    LL sum=0;
+    for (int i=0;i<ans.n;i++)
+    {
+        sum+=ans.maze[i][0];
+        sum%=mod;
+    }
+    // for(int i=0;i<(ans.n+1)/2+1;i++){
+    //     sum+=(ans.maze[i][ans.n-1]*k*(k-1)+ans.maze[i][ans.n-2]*k)%mod;
+    //     sum%=mod;
+    // }
+    return sum;
+}
+
+int main()
+{
+    int t;
+    scanf("%d",&t);
+    while(t--)
+    {
+        int n,m;
+        scanf("%d%d%d",&n,&m,&k);
+        Matrix A;
+        A.init(m+1);
+        for (int i=0;i<=m;i++)
+            A.maze[0][i]=k*k-k;
+        for (int i=0;i<=m;i++)
+            A.maze[i+1][i]=k;
+ /*
+        for (int i=0;i<=m;i++)
+        {
+            for (int j=0;j<=m;j++)
+                printf("%d ",A.maze[i][j]);
+            printf("\n");
+        }
+ */
+        LL ans=qpow(A,n);
+        //printf("bug: %lld\n",ans);
+        A.init(m);
+        for (int i=0;i<m;i++)
+            A.maze[0][i]=k*k-k;
+        for (int i=0;i<m;i++)
+            A.maze[i+1][i]=k;
+/*        for (int i=0;i<m;i++)
+        {
+            for (int j=0;j<m;j++)
+                printf("%d ",A.maze[i][j]);
+            printf("\n");
+        }
+ */
+        ans=(ans-qpow(A,n)+mod)%mod;
+
+        printf("%lld\n",ans);
+    }
+    return 0;
+}
+/*
+2
+3 2 3
+3 3 3
+*/

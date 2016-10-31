@@ -1,0 +1,127 @@
+#include<iostream>
+#include<cstdio>
+#include<cstring>
+
+using namespace std;
+
+const int N=100010;
+
+#define L(rt) (rt<<1)
+#define R(rt) (rt<<1|1)
+
+struct Tree{
+    int l,r;
+    int col;    //  用一个32位的int型，每一位对应一种颜色，用位运算代替bool col[32]
+    bool cover; //  表示这个区间都被涂上同一种颜色，线段树效率的体现，否则插入就是0(n)了。
+}tree[N<<2];
+
+void PushUp(int rt){    // 最后递归回来再更改父节点的颜色
+    tree[rt].col=tree[L(rt)].col | tree[R(rt)].col;
+}
+
+void build(int L,int R,int rt){
+    tree[rt].l=L;
+    tree[rt].r=R;
+    tree[rt].col=1; //  开始时都为涂有颜色1，看题要仔细，要注意状态。
+    tree[rt].cover=1;
+    if(tree[rt].l==tree[rt].r)
+        return ;
+    int mid=(L+R)>>1;
+    build(L,mid,L(rt));
+    build(mid+1,R,R(rt));
+}
+
+void PushDown(int rt){  //  延迟覆盖的操作
+    tree[L(rt)].col=tree[rt].col;
+    tree[L(rt)].cover=1;
+    tree[R(rt)].col=tree[rt].col;
+    tree[R(rt)].cover=1;
+    tree[rt].cover=0;
+}
+
+void update(int val,int L,int R,int rt){
+    if(L<=tree[rt].l && R>=tree[rt].r){
+        tree[rt].col=val;
+        tree[rt].cover=1;
+        return ;
+    }
+    if(tree[rt].col==val)  //剪枝
+        return ;
+    if(tree[rt].cover)
+        PushDown(rt);
+    int mid=(tree[rt].l+tree[rt].r)>>1;
+    if(R<=mid)
+        update(val,L,R,L(rt));
+    else if(L>=mid+1)
+        update(val,L,R,R(rt));
+    else{
+        update(val,L,mid,L(rt));
+        update(val,mid+1,R,R(rt));
+    }
+    PushUp(rt);      // 最后递归回来再更改父节点的颜色
+}
+
+int sum;
+
+void query(int L,int R,int rt){
+    if(L<=tree[rt].l && R>=tree[rt].r){
+        sum |= tree[rt].col;
+        return ;
+    }
+    if(tree[rt].cover){     //  这个区间全部为1种颜色，就没有继续分割区间的必要了
+        sum |= tree[rt].col;     //  颜色种类相加的位运算代码
+        return;
+    }
+    int mid=(tree[rt].l+tree[rt].r)>>1;
+    if(R<=mid)
+        query(L,R,L(rt));
+    else if(L>=mid+1)
+        query(L,R,R(rt));
+    else{
+        query(L,mid,L(rt));
+        query(mid+1,R,R(rt));
+    }
+}
+
+int solve(){
+    int ans=0;
+    while(sum){
+        if(sum&1)
+            ans++;
+        sum>>=1;
+    }
+    return ans;
+}
+
+void swap(int &a,int &b){
+    int tmp=a;a=b;b=tmp;
+}
+
+int main(){
+
+    //freopen("input.txt","r",stdin);
+
+    int n,t,m;
+    while(~scanf("%d%d%d",&n,&t,&m)){
+        build(1,n,1);
+        char op[3];
+        int a,b,c;
+        while(m--){
+            scanf("%s",op);
+            if(op[0]=='C'){
+                scanf("%d%d%d",&a,&b,&c);
+                if(a>b)
+                    swap(a,b);
+                update(1<<(c-1),a,b,1); // int型的右起第c位变为1，即2的c-1次方。
+            }else{
+                scanf("%d%d",&a,&b);
+                if(a>b)
+                    swap(a,b);
+                sum=0;
+                query(a,b,1);
+                printf("%d\n",solve());
+            
+        }
+    }
+    return 0;
+}

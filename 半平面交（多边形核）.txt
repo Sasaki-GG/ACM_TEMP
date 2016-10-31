@@ -1,0 +1,118 @@
+#include <stdio.h>
+#include <string.h>
+#include <cstdio>
+#include <algorithm>
+#include <iostream>
+#include <math.h>
+using namespace std;
+const int N = 300005;
+const double EXP = 1e-8;
+typedef long long LL;
+struct point
+{
+    double x , y ;
+}p[N];
+struct line
+{
+    point a,b;
+    double angle;
+}l[N];
+int cas,n,top,bot,order[N],ln,dq[N];
+double abs(double a)
+{
+    if (a<0)
+        return -a;
+    return a;
+}
+int dblcmp(double k)
+{
+    if (abs(k)<EXP)
+        return 0;
+    return k>0?1:-1;
+}
+double det(point p0,point p1,point p2)
+{
+    return (p1.x-p0.x)*(p2.y-p0.y)-(p1.y-p0.y)*(p2.x-p0.x);
+}
+bool cmp(int a,int b)
+{
+    int d = dblcmp(l[a].angle-l[b].angle);
+    if (d==0)
+        return dblcmp(det(l[a].a,l[b].a,l[b].b))<0;  //  逆时针输入（取左侧）时为">"
+    return d<0;
+}
+void getIntersect (line l1,line l2,point &p)
+{
+    double d1,d2;
+    d1=det(l2.a,l1.b,l1.a);
+    d2=det(l1.b,l2.b,l1.a);
+    p.x=(l2.a.x*d2+l2.b.x*d1)/(d2+d1);
+    p.y=(l2.a.y*d2+l2.b.y*d1)/(d2+d1);
+}
+bool judge (line l0,line l1,line l2)
+{
+    point p;
+    getIntersect(l1,l2,p);
+    return dblcmp(det(p,l0.a,l0.b))>0;		//  逆时针输入（即取左侧）时为"<"
+}
+void addline(double x1,double y1,double x2,double y2)
+{
+    l[ln].a.x=x1;
+    l[ln].a.y=y1;
+    l[ln].b.x=x2;
+    l[ln].b.y=y2;
+    l[ln].angle=atan2(y2-y1,x2-x1);
+    order[ln]=ln;
+    ln++;
+}
+void halfPlaneIntersection()
+{
+    int i,j;
+    sort(order,order+ln,cmp);
+    for (i=1,j=0;i<ln;i++)
+        if (dblcmp(l[order[i]].angle-l[order[j]].angle)>0)
+            order[++j]=order[i];
+    ln=j+1;
+    dq[0]=order[0];
+    dq[1]=order[1];
+    bot=0;
+    top=1;
+    for (i=2;i<ln;i++)
+    {
+        while (bot<top&&judge(l[order[i]],l[dq[top-1]],l[dq[top]]))
+            top--;
+        while (bot<top&&judge(l[order[i]],l[dq[bot+1]],l[dq[bot]]))
+            bot++;
+        dq[++top]=order[i];
+    }
+    while (bot<top&&judge(l[order[bot]],l[dq[top-1]],l[dq[top]]))
+        top--;
+    while (bot<top&&judge(l[order[top]],l[dq[bot+1]],l[dq[bot]]))
+        bot++;
+}
+bool isCore()
+{
+    if (top-bot>1)
+        return true;
+    return false;
+}
+int main ()
+{
+    int i;
+    scanf ("%d",&cas);
+    while (cas--)
+    {
+        scanf ("%d",&n);
+        for (i=0;i<n;i++)
+            scanf("%lf%lf",&p[i].x,&p[i].y);
+        for (ln=i=0;i<n-1;i++)
+            addline(p[i].x,p[i].y,p[i+1].x,p[i+1].y);
+        addline(p[i].x,p[i].y,p[0].x,p[0].y);
+        halfPlaneIntersection();
+        if (isCore())
+            printf("YES\n");
+        else
+            printf("NO\n");
+    }
+return 0 ;
+}

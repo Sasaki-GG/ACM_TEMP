@@ -1,0 +1,120 @@
+﻿#include <iostream>
+#include <cstdio>
+#include <cstring>
+#include <cmath>
+#include <vector>
+using namespace std;
+typedef unsigned long long LL;
+const int N = 10005;
+int n,m,ct=0,top=0,tim=0,a,b;
+struct poi
+{
+    int low,dfn,vis,ins,num;
+}s[N];
+int stk[N],od[N],cut=0,du[N];
+vector <int> p[N];
+int min(int a,int b)
+{
+    return a<b?a:b;
+}
+void add(int x,int y)
+{
+    p[x].push_back(y);
+}
+void tarjan(int x)
+{
+    s[x].vis=1;
+    s[x].ins=1;
+    s[x].low=s[x].dfn=tim;
+    stk[top++]=x;
+    tim++;
+    for (int i=0;i<p[x].size();i++)
+    {
+        int u=p[x][i];
+        if (s[u].vis==0)
+        {
+            tarjan(u);
+            s[x].low=min(s[x].low,s[u].low);
+        }
+        else if (s[u].ins==1)
+        {
+            s[x].low=min(s[x].low,s[u].dfn);
+        }
+    }
+    if (s[x].low==s[x].dfn)
+    {
+        cut++;
+        while (top>0&&stk[top]!=x)
+        {
+            top--;
+            int tp=stk[top];
+            s[tp].ins=0;
+            s[tp].num=cut;  //标记所属块 
+        }
+    }
+}
+void ini()
+{
+    memset(s,0,sizeof(s));
+    memset(du,0,sizeof(du));
+    tim=1;
+    cut=0;
+    for (int i=0;i<=n;i++)
+        p[i].clear();
+}
+void solve()
+{
+    
+    for (int i=1;i<=n;i++)
+        if (s[i].vis==0)
+            tarjan(i);
+    for(int i=1; i<=n; i++)
+    {
+        for(int j=0;j<p[i].size();j++)
+        {
+            if(s[i].num!=s[p[i][j]].num)  //计算出度 
+            {
+                du[s[i].num]++;
+            }
+        }
+    }
+    int sum=0,x;
+    for(int i=1; i<=cut; i++)
+    {
+        if(!du[i])
+        {
+            sum++;
+            x=i;
+        }
+    }
+    if(sum==1)
+    {
+        sum=0;
+        for(int i=1; i<=n; i++)
+        {
+            if(s[i].num==x)
+            {
+                sum++;
+            }
+        }
+        printf("%d\n",sum);
+    }
+    else
+    {
+        printf("0\n");
+    }
+}
+int main()
+{
+    while (~scanf("%d%d",&n,&m))
+    {
+        ini();
+        for (int i=0;i<m;i++)
+        {
+            scanf("%d%d",&a,&b);
+            add(a,b);
+        }
+        solve();
+    }
+    return 0;
+}

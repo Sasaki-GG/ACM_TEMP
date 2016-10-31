@@ -1,0 +1,44 @@
+#include<iostream>
+#include<string.h>
+#include<cstdio>
+using namespace std;
+#define INF 50005*2
+#define _bug
+int m,n;
+int t,ma[INF][40],mi[INF][40];
+void st()
+{
+	for(int i=1;(1<<i)<=n;i++)
+		for(int j=1;j+(i<<1)-1<=n;j++)
+		{
+			ma[j][i]=max(ma[j][i-1],ma[j+(1<<(i-1))][i-1]);
+			mi[j][i]=min(mi[j][i-1],mi[j+(1<<(i-1))][i-1]);
+		}
+}
+int rq(int l,int r)
+{
+	int k=0;  
+    while((1<<(k+1))<=r-l+1)  
+        k++;  
+    return max(ma[l][k],ma[r-(1<<k)+1][k])- min(mi[l][k],mi[r-(1<<k)+1][k]);
+}
+int main()
+{
+	memset(ma,0,sizeof(ma));
+	memset(mi,0,sizeof(mi));
+	cin>>n>>m;
+	for(int i=1;i<=n;i++)
+	{
+		scanf("%d",&t);
+		ma[i][0]=t;
+		mi[i][0]=t;
+	}
+	st();
+	while(m--)
+	{
+		int l,r;
+		scanf("%d%d",&l,&r);
+		printf("%d\n",rq(l,r));
+	}
+	return 0;
+}

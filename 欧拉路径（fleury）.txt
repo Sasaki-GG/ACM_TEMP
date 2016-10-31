@@ -1,0 +1,81 @@
+#include<iostream>
+#include<cstdio>
+#include<cstring>
+#include<string.h>
+#include<algorithm>
+#include<vector>
+using namespace std;
+
+const int N = 1005;
+int n, m, flag, top, sum, du[N], ans[5005], map[N][N];
+
+void dfs(int x)
+{
+    ans[++top] = x;
+    for(int i = 1; i <= n; i++)
+    {
+        if(map[x][i] >= 1)
+        {
+            map[x][i]--;
+            map[i][x]--;
+            dfs(i);
+            break;
+        }
+    }
+}
+
+void fleury(int x)
+{
+    top = 1;
+    ans[top] = x;
+    while(top > 0)
+    {
+        int k = 0;
+        for(int i = 1; i <= n; i++)//判断是否可扩展
+        {
+            if(map[ans[top]][i] >= 1)//若存在一条从ans[top]出发的边  那么就是可扩展
+            {k = 1; break;}
+        }
+        if(k == 0)//该点x没有其他的边可以先走了（即不可扩展）， 那么就输出它
+        {
+            printf("%d ", ans[top]);
+            top--;
+        }
+        else if(k == 1)//如可扩展， 则dfs可扩展的哪条路线
+        {
+            top--;//这需要注意
+            dfs(ans[top+1]);
+        }
+    }
+}
+int main()
+{
+    while(scanf("%d%d", &n, &m) != EOF)
+    {
+        memset(du, 0, sizeof(du));
+        memset(map, 0, sizeof(map));
+
+        for(int i = 1; i <= m; i++)
+        {
+            int x, y;
+            scanf("%d%d", &x, &y);
+            map[x][y]++; //记录边， 因为是无向图所以加两条边， 两个点之间可能有多条边
+            map[y][x]++;
+            du[x]++;
+            du[y]++;
+        }
+        flag = 1; // flag标记开始点。 如果所有点度数全为偶数那就从1开始搜
+        sum = 0;
+        for(int i = 1; i <= n; i++)
+        {
+            if(du[i] % 2 == 1)
+            {
+                sum++;
+                flag = i;// 若有奇数边， 从奇数边开始搜
+            }
+        }
+        if(sum == 0 || sum == 2)
+            fleury(flag);
+    }
+    return 0;
+}

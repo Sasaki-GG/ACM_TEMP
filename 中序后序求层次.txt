@@ -1,0 +1,54 @@
+//根据后序和中序遍历写出前序
+#include <iostream>
+#include <algorithm>
+#include <cstdio>
+using namespace std;
+int t1[1001],t2[1001],cnt=0;
+struct RE
+{
+    int id;
+    int c;
+}res[1000];
+bool cmp(RE a,RE b)
+{
+    return a.id<b.id;
+}
+void sousuo(int a,int b,int n,int flag,int ct)
+{
+    int i;
+	if(n<=0)//不存在左子树或者右子树，则返回上一层
+        return ;
+    res[cnt].id=ct;
+    res[cnt].c=t1[a];
+    cnt++;
+    // if(flag==1)//最原始的根节点
+    //     printf("%d",t1[a]);
+    // else //一般的根节点
+    //     printf(" %d",t1[a]);
+    for(i=0;t1[a]!=t2[b+i];i++) ;//找出根节点
+    sousuo(a-n+i,b,i,0,ct*2+1);//左子树的遍历
+    sousuo(a-1,b+i+1,n-i-1,0,ct*2+2);//右子树的遍历
+}
+int main()
+{
+    int n,i;
+    while(scanf("%d",&n)!=EOF)
+    {
+        for(i=1;i<=n;i++)
+            scanf("%d",&t1[i]);//t1中存的是后序
+        for(i=1;i<=n;i++)
+            scanf("%d",&t2[i]);//t2中存的是中序
+        cnt=0;
+        sousuo(n,1,n,1,0);//因为后序最后遍历的是根节点,所以这里和前面的开始点不同，注意一下
+	    sort(res,res+cnt,cmp);
+	    //cout<<cnt';
+	    for (int i=0;i<cnt;i++)
+	    {   
+	        if (i)
+	          cout<<' ';
+	        cout<<res[i].c;
+	    }
+        printf("\n");
+    }
+    return 0;
+}
